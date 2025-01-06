@@ -38,24 +38,24 @@ class Info(BaseModel):
 
 class Stats(BaseModel):
     """Model for the Riot DDragon champion stats"""
-    hp: int
-    hpperlevel: int
-    mp: int
-    mpperlevel: int
-    movespeed: int
-    armor: int
+    hp: float
+    hpperlevel: float
+    mp: float
+    mpperlevel: float
+    movespeed: float
+    armor: float
     armorperlevel: float
-    spellblock: int
+    spellblock: float
     spellblockperlevel: float
-    attackrange: int
-    hpregen: int
+    attackrange: float
+    hpregen: float
     hpregenperlevel: float
-    mpregen: int
-    mpregenperlevel: int
-    crit: int
-    critperlevel: int
-    attackdamage: int
-    attackdamageperlevel: int
+    mpregen: float
+    mpregenperlevel: float
+    crit: float
+    critperlevel: float
+    attackdamage: float
+    attackdamageperlevel: float
     attackspeedperlevel: float
     attackspeed: float
 
@@ -74,7 +74,7 @@ class Spell(BaseModel):
     tooltip: str
     leveltip: Leveltip
     maxrank: int
-    cooldown: List[int]
+    cooldown: List[float]
     cooldownBurn: str
     cost: List[int]
     costBurn: str

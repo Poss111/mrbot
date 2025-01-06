@@ -7,6 +7,7 @@ from injector import inject
 import structlog
 
 from leaguetracker.models.riot_ddragon_champion import RiotDDragonChampion
+from leaguetracker.models.riot_ddragon_champions import RiotDDragonChampions
 from leaguetracker.services.riot_ddragon_service import RiotDDragonService
 
 class Champions(commands.Cog):
@@ -18,15 +19,10 @@ class Champions(commands.Cog):
         
     @discord.app_commands.command(
         name="get_champion",
-        description="Get champion information",
+    description="Get champion information",
     )
     @discord.app_commands.describe(champion="Champion name to search for")
-    @discord.app_commands.choices(
-        champion=[
-            discord.app_commands.Choice(name="Aatrox", value="Aatrox"),
-            discord.app_commands.Choice(name="Annie", value="Annie")
-        ]
-    )
+    @discord.app_commands.autocomplete(name=champion_autocomplete)
     async def get_champion(self, interaction : discord.Interaction, champion: str):
         """Get champion information"""
         log = structlog.getLogger().bind(command=interaction.command.name, id=interaction.id, user=interaction.user.id, guild=interaction.guild.id)
@@ -46,6 +42,21 @@ class Champions(commands.Cog):
             color=discord.Color.blue()
         )
         await interaction.response.send_message(embeds=[embed, tips_embed])
+
+    async def champion_autocomplete(self, interaction: discord.Interaction, current: str) -> list[discord.app_commands.Choice[str]]:
+        champions: RiotDDragonChampions = await self.riot_ddragon_service.retrieve_champion_list()
+
+        champion_names = champions.data.keys()
+
+        matches = [name for name in champion_names if name.startswith(current)]
+
+        structlog.get_logger().info(f"Filtering for {current}", matches=matches)
+
+        return [
+            discord.app_commands.OptionChoice(name=name, value=name)
+            for name in matches
+        ]
+
 
 async def setup(bot):
     riot_ddragon_service: RiotDDragonService = bot.injector.get(RiotDDragonService)
