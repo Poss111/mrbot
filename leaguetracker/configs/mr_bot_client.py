@@ -3,15 +3,10 @@ import asyncio
 import os
 import random
 import time
-import traceback
 import discord
 from discord.ext import commands
 from injector import Injector, inject
 import structlog
-from structlog.contextvars import (
-    clear_contextvars, 
-    bind_contextvars
-)
 
 from leaguetracker.configs.environment_variables import EnvVariables
 
@@ -79,7 +74,7 @@ class MrBotClient(commands.Bot):
     
     async def on_interaction(self, interaction: discord.Interaction):
         """Event listener for when an interaction occurs"""
-        self.log.info("Command completed successfully")
+        self.log.info("Command completed successfully", id=interaction.id, guild=interaction.guild.id, user=interaction.user.id, command=interaction.command.name)
 
     async def setup_hook(self) -> None:
         """Setup hook for the bot"""

@@ -6,6 +6,10 @@ from discord.ext import commands
 from discord import app_commands
 
 from injector import inject
+from structlog.contextvars import (
+    clear_contextvars, 
+    bind_contextvars
+)
 
 import structlog
 
@@ -21,6 +25,7 @@ class Champions(commands.Cog):
     
     def __init__(self, bot: MrBotClient):
         self.bot = bot
+        self.log = self.bot.log
 
     async def champion_autocomplete(self, interaction: discord.Interaction, current: str) -> list[discord.app_commands.Choice[str]]:
         """Autocomplete for champion names"""
@@ -50,6 +55,8 @@ class Champions(commands.Cog):
     @app_commands.guilds(int(os.getenv(EnvVariables.DISCORD_GUILD_ID.name)))
     async def get_champion(self, interaction : discord.Interaction, champion: str):
         """Get champion information"""
+        clear_contextvars()
+        bind_contextvars(id=interaction.id, guild=interaction.guild.id, user=interaction.user.id, command=interaction.command.name)
         self.bot.log.info("Retrieving champion information...")
         handler : GetChampionHandler = self.bot.injector.get(GetChampionHandler)
         if handler is None:
