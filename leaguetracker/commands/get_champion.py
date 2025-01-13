@@ -1,69 +1,71 @@
 """Module for base discord command"""
+import os
+import traceback
 import discord
 from discord.ext import commands
+from discord import app_commands
 
 from injector import inject
 
 import structlog
 
+from leaguetracker.configs.environment_variables import EnvVariables
+from leaguetracker.configs.mr_bot_client import MrBotClient
 from leaguetracker.handlers.get_champion_handler import GetChampionHandler
-from leaguetracker.models.logger_details import LoggerDetails
+from leaguetracker.models.get_champion_embed import GetChampionEmbed
 from leaguetracker.models.riot_ddragon_champion import RiotDDragonChampion
 from leaguetracker.models.riot_ddragon_champions import RiotDDragonChampions
-from leaguetracker.services.riot_ddragon_service import RiotDDragonService
+from leaguetracker.services.riot_ddragon_cache import RiotDDragonCache
 
 class Champions(commands.Cog):
     
-    @inject
-    def __init__(self, bot: commands.Bot, get_champion_handler: GetChampionHandler, riot_ddragon_service: RiotDDragonService):
+    def __init__(self, bot: MrBotClient):
         self.bot = bot
-        self.get_champion_handler = get_champion_handler
-        self.riot_ddragon_service = riot_ddragon_service
-
 
     async def champion_autocomplete(self, interaction: discord.Interaction, current: str) -> list[discord.app_commands.Choice[str]]:
-        champions: RiotDDragonChampions = await self.riot_ddragon_service.retrieve_champion_list()
+        """Autocomplete for champion names"""
+        riot_ddragon_cache = self.bot.injector.get(RiotDDragonCache)
+        champions: RiotDDragonChampions = riot_ddragon_cache.get()
 
         champion_names = champions.data.keys()
 
         matches = [name for name in champion_names if name.startswith(current)]
 
-        structlog.get_logger().info(f"Filtering for {current}", matches=matches)
+        structlog.get_logger().debug(f"Filtering for {current}", matches=matches)
+        
+        # Trim to 25 matches
+        matches = matches[:25]
 
         return [
-            discord.app_commands.OptionChoice(name=name, value=name)
+            app_commands.Choice(name=name, value=name)
             for name in matches
         ]
         
-    @discord.app_commands.command(
+    @app_commands.command(
         name="get_champion",
-    description="Get champion information",
+        description="Get champion information",
     )
-    @discord.app_commands.describe(champion="Champion name to search for")
-    @discord.app_commands.autocomplete(champion=champion_autocomplete)
-    @discord.app_commands.guilds(460520499680641035)
+    @app_commands.describe(champion="Champion name to search for")
+    @app_commands.autocomplete(champion=champion_autocomplete)
+    @app_commands.guilds(int(os.getenv(EnvVariables.DISCORD_GUILD_ID.name)))
     async def get_champion(self, interaction : discord.Interaction, champion: str):
         """Get champion information"""
-        log = structlog.getLogger().bind()
-        log.info("Retrieving champion information...")
-        championData: RiotDDragonChampion = await self.get_champion_handler.handle(champion)
+        self.bot.log.info("Retrieving champion information...")
+        handler : GetChampionHandler = self.bot.injector.get(GetChampionHandler)
+        if handler is None:
+            self.bot.log.error("Missing get champion handler")
+            return await interaction.response.send_message("Whoops! Something went wrong. Please try again later.")
         
-        embed = discord.Embed(
-            title=champion,
-            description=championData.data[champion].lore,
-            color=discord.Color.blue()
-        )
-        embed.set_author(name="@299370234228506627")
-        embed.set_footer(text="Made with discord.py")
-        tips_embed = discord.Embed(
-            title="Tips",
-            description="\n".join(championData.data[champion].allytips),
-            color=discord.Color.blue()
-        )
-        await interaction.response.send_message(embeds=[embed, tips_embed])
-
+        champion_data: RiotDDragonChampion = await handler.handle(champion)
+        
+        self.bot.log.info(f"Champion data retrieved for {champion}, creating embed...")
+        
+        get_champion_embed : GetChampionEmbed = self.bot.injector.get(GetChampionEmbed)
+        if get_champion_embed is None:
+            log.error("Missing embed handler")
+            return await interaction.response.send_message("Whoops! Something went wrong. Please try again later.")
+        await interaction.response.send_message(embeds=[get_champion_embed.create_embed(champion, champion_data.data.get(champion))])
 
 async def setup(bot):
-    riot_ddragon_service: RiotDDragonService = bot.injector.get(RiotDDragonService)
-    get_champion_handler: GetChampionHandler = bot.injector.get(GetChampionHandler)
-    await bot.add_cog(Champions(bot, get_champion_handler, riot_ddragon_service))
+    """Setup the cog"""
+    await bot.add_cog(Champions(bot))

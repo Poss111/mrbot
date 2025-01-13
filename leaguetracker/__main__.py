@@ -1,3 +1,4 @@
+"""Main entry point for the bot. This file is responsible for setting up the bot and running it."""
 import logging
 import os
 import sys
@@ -6,15 +7,17 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import discord
-from discord.ext import commands
 from dotenv import load_dotenv
-from injector import Injector, Module, inject, singleton
+from injector import Injector, Module, provider, singleton
 import structlog
-import random
 
+from leaguetracker.configs.environment_variables import EnvVariables
 from leaguetracker.configs.logging_config import setup_logging
+from leaguetracker.services.riot_ddragon_cache import RiotDDragonCache
 from leaguetracker.services.riot_ddragon_service import RiotDDragonService
 from leaguetracker.handlers.get_champion_handler import GetChampionHandler
+from leaguetracker.configs.mr_bot_client import MrBotClient
+from leaguetracker.models.get_champion_embed import GetChampionEmbed
 
 load_dotenv()
 setup_logging()
@@ -22,89 +25,47 @@ setup_logging()
 log = structlog.get_logger()
 
 class BotModule(Module):
-    def configure(self, binder):
-        riot_ddragon_service = RiotDDragonService("https://ddragon.leagueoflegends.com")
-        binder.bind(RiotDDragonService, to=riot_ddragon_service, scope=singleton)
-        binder.bind(GetChampionHandler, to=GetChampionHandler(riot_ddragon_service), scope=singleton)
+    """Module for the bot. This class is responsible for setting up the bot's dependencies."""
+    
+    @singleton
+    @provider
+    def riot_ddargon_cache(self) -> RiotDDragonCache:
+        """Creates a RiotDDragonCache instance."""
+        return RiotDDragonCache()
+    
+    @singleton
+    @provider
+    def riot_ddragon_service(self) -> RiotDDragonService:
+        """Creates a RiotDDragonService instance."""
+        return RiotDDragonService("https://ddragon.leagueoflegends.com")
+    
+    @singleton
+    @provider
+    def get_champion_handler(self, riot_ddragon_service: RiotDDragonService) -> GetChampionHandler:
+        """Creates a GetChampionHandler instance."""
+        return GetChampionHandler(riot_ddragon_service)
+    
+    @singleton
+    @provider
+    def bot(self, injector: Injector) -> MrBotClient:
+        """Creates a MrBotClient instance."""
+        intents = discord.Intents.default()
+        intents.message_content = True
+        return MrBotClient(intents, log, injector)
 
-# Bot setup
-intents = discord.Intents.default()
-intents.message_content = True
-
-@inject
-def create_bot(riot_ddragon_service: RiotDDragonService, get_champion_handler: GetChampionHandler, injector: Injector) -> commands.Bot:
-    """Create the bot instance"""
-    status_messages = {
-        discord.ActivityType.watching: [
-            "for commands",
-            "the latest updates",
-            "your messages",
-            "the world burn",
-            "the sunrise",
-            "the world go by ( ͡° ͜ʖ ͡°)"
-        ],
-        discord.ActivityType.playing: [
-            "League of Legends",
-            "World of Warcraft",
-            "Minesweeper",
-            "Among Us",
-            "Kingdom Hearts",
-            "with your ❤️ ;)"
-        ],
-        discord.ActivityType.listening: [
-            "Eminem",
-            "Taylor Swift",
-            "Queen",
-            "The Beatles",
-            "ACDC",
-            "to your problems, tell Mr. Bot everything"
-        ]
-    }
-    random_activity_type = random.choice(list(status_messages.keys()))
-    random_activity_msg = random.choice(status_messages[random_activity_type])
-    log.info(f"Setting activity to {random_activity_type} {random_activity_msg}...")
-    bot = commands.Bot(
-        command_prefix="!mrbot",
-        intents=intents,
-        activity=discord.Activity(
-            type=random_activity_type,
-            name=random_activity_msg
+    @provider
+    def get_champion_embed(self) -> GetChampionEmbed:
+        """Creates a GetChampionEmbed instance."""
+        return GetChampionEmbed(
+            os.getenv(EnvVariables.FOOTER_MSG.name), 
+            os.getenv(EnvVariables.AUTHOR.name)
         )
-    )
-    bot.injector = injector
-
-    @bot.event
-    async def on_interaction(interaction: discord.Interaction):
-        structlog.contextvars.clear_contextvars()
-        structlog.contextvars.bind_contextvars(id=interaction.id, user=interaction.user.id, guild=interaction.guild.id, command=interaction.command.name)
-        log.info("Setting up context...")
-            
-            
-    @bot.event
-    async def setup_hook() -> None:
-        """Setup hook for the bot"""
-
-        # Load cogs dynamically, passing the injector
-        for filename in os.listdir("leaguetracker/commands"):
-            if filename.endswith('.py') and filename != "__init__.py":
-                await bot.load_extension(f"leaguetracker.commands.{filename[:-3]}")
-                
-        try:
-            guild = discord.Object(id=460520499680641035)
-            log.info("Syncing commands...", commands=list(map(lambda command: command.name, bot.tree.get_commands())), guild=guild.id)
-            synced = await bot.tree.sync(
-                guild=guild
-            )
-            log.info(f"Synced {len(synced)} command(s).")
-        except Exception as e:
-            log.error(f"Failed to sync commands: {e}")
-
-    return bot
 
 if __name__ == "__main__":
     logging.basicConfig(
         format="%(message)s", stream=sys.stdout, level=logging.INFO
     )
     injector = Injector([BotModule()])
-    bot_instance = injector.call_with_injection(create_bot)
-    bot_instance.run(os.getenv('DISCORD_TOKEN'))
+    # bot_instance = injector.call_with_injection(create_bot)
+    mr_bot_instance = injector.get(MrBotClient)
+    mr_bot_instance.run(os.getenv(EnvVariables.DISCORD_TOKEN.name))

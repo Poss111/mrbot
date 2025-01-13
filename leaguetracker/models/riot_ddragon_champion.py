@@ -30,10 +30,10 @@ class Skin(BaseModel):
 
 class Info(BaseModel):
     """Model for the Riot DDragon champion info"""
-    attack: int
-    defense: int
-    magic: int
-    difficulty: int
+    attack: float
+    defense: float
+    magic: float
+    difficulty: float
 
 
 class Stats(BaseModel):
@@ -76,10 +76,10 @@ class Spell(BaseModel):
     maxrank: int
     cooldown: List[float ]
     cooldownBurn: str
-    cost: List[int]
+    cost: List[float]
     costBurn: str
     datavalues: Dict[str, Any]
-    effect: List[Optional[List[int]]]
+    effect: List[Optional[List[float]]]
     effectBurn: List[Optional[str]]
     vars: List
     costType: str

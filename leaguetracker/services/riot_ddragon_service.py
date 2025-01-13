@@ -32,7 +32,7 @@ class RiotDDragonService:
 
     async def retrieve_champion_list(self, riot_ddragon_version=None) -> RiotDDragonChampions:
         """Retrieve a list of champions from Riot's DDragon API"""
-        self.retrieve_available_versions()
+        await self.retrieve_available_versions()
         version = self._versions_cache.get('data')[0]
         if riot_ddragon_version is not None:
             if riot_ddragon_version not in self._versions_cache.get('data'):
