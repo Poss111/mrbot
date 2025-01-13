@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 
@@ -12,8 +13,8 @@ import structlog
 import random
 
 from leaguetracker.configs.logging_config import setup_logging
-
 from leaguetracker.services.riot_ddragon_service import RiotDDragonService
+from leaguetracker.handlers.get_champion_handler import GetChampionHandler
 
 load_dotenv()
 setup_logging()
@@ -22,14 +23,16 @@ log = structlog.get_logger()
 
 class BotModule(Module):
     def configure(self, binder):
-        binder.bind(RiotDDragonService, to=RiotDDragonService("https://ddragon.leagueoflegends.com"), scope=singleton)
+        riot_ddragon_service = RiotDDragonService("https://ddragon.leagueoflegends.com")
+        binder.bind(RiotDDragonService, to=riot_ddragon_service, scope=singleton)
+        binder.bind(GetChampionHandler, to=GetChampionHandler(riot_ddragon_service), scope=singleton)
 
 # Bot setup
 intents = discord.Intents.default()
 intents.message_content = True
 
 @inject
-def create_bot(riot_ddragon_service: RiotDDragonService, injector: Injector) -> commands.Bot:
+def create_bot(riot_ddragon_service: RiotDDragonService, get_champion_handler: GetChampionHandler, injector: Injector) -> commands.Bot:
     """Create the bot instance"""
     status_messages = {
         discord.ActivityType.watching: [
@@ -69,6 +72,13 @@ def create_bot(riot_ddragon_service: RiotDDragonService, injector: Injector) -> 
         )
     )
     bot.injector = injector
+
+    @bot.event
+    async def on_interaction(interaction: discord.Interaction):
+        structlog.contextvars.clear_contextvars()
+        structlog.contextvars.bind_contextvars(id=interaction.id, user=interaction.user.id, guild=interaction.guild.id, command=interaction.command.name)
+        log.info("Setting up context...")
+            
             
     @bot.event
     async def setup_hook() -> None:
@@ -88,11 +98,13 @@ def create_bot(riot_ddragon_service: RiotDDragonService, injector: Injector) -> 
             log.info(f"Synced {len(synced)} command(s).")
         except Exception as e:
             log.error(f"Failed to sync commands: {e}")
-            
 
     return bot
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        format="%(message)s", stream=sys.stdout, level=logging.INFO
+    )
     injector = Injector([BotModule()])
     bot_instance = injector.call_with_injection(create_bot)
     bot_instance.run(os.getenv('DISCORD_TOKEN'))

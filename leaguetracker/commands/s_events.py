@@ -9,23 +9,23 @@ class Events(commands.Cog):
     def __init__(self, bot):
         # self.process = psutil.Process(os.getpid())
         self.bot = bot
-        self.logger = structlog.getLogger()
         
     @commands.Cog.listener()
     async def on_ready(self):
         """Event listener for when the bot is ready"""
-        self.logger.info("Bot is ready!")
+        log = structlog.get_logger().bind()
+        log.info("Bot is ready!")
         
     @commands.Cog.listener()
     async def on_interaction(self, interaction: discord.Interaction):
         """Event listener for when an interaction occurs"""
-        self.logger = self.logger.new(id=interaction.id, user=interaction.user.id, guild=interaction.guild.id)
-        self.logger.info("Interaction received")
+        log = structlog.get_logger().bind()
+        log.info("Interaction received")
         
     @commands.Cog.listener()
-    async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
+    async def on_error(self, ctx: commands.Context, error: commands.CommandError):
         """Event listener for when a command error occurs"""
-        log = self.logger.bind()
+        log = structlog.get_logger().bind()
         
         # Log the error
         log.error(f"Unhandled command error: {error}")
@@ -41,7 +41,7 @@ class Events(commands.Cog):
     @commands.Cog.listener()
     async def on_app_command_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
         """Event listener for when an error occurs with an app command"""
-        log = self.logger.bind()
+        log = structlog.get_logger().bind()
         
         # Log the error
         log.error(f"Unhandled slash command error: {error}")

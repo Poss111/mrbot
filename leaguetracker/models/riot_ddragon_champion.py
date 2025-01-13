@@ -74,7 +74,7 @@ class Spell(BaseModel):
     tooltip: str
     leveltip: Leveltip
     maxrank: int
-    cooldown: List[float]
+    cooldown: List[float ]
     cooldownBurn: str
     cost: List[int]
     costBurn: str
