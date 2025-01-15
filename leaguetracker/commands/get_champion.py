@@ -69,7 +69,7 @@ class Champions(commands.Cog):
         
         get_champion_embed : GetChampionEmbed = self.bot.injector.get(GetChampionEmbed)
         if get_champion_embed is None:
-            log.error("Missing embed handler")
+            self.bot.log.error("Missing embed handler")
             return await interaction.response.send_message("Whoops! Something went wrong. Please try again later.")
         await interaction.response.send_message(embeds=[get_champion_embed.create_embed(champion, champion_data.data.get(champion))])
 

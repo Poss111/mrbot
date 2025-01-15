@@ -38,3 +38,8 @@ LeagueTracker is licensed under the MIT License. See the [LICENSE](#) file for m
 For any questions or support, please join our [Discord server](#) or contact me at [rixxroid@gmail.com](mailto:rixxroid@gmail.com).
 
 Enjoy using LeagueTracker and may your stats always be legendary!
+
+
+## Disclaimer
+
+Mr. Bot is not endorsed by Riot Games and does not reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games and all associated properties are trademarks or registered trademarks of Riot Games, Inc
