@@ -1,15 +1,30 @@
 resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
+
+  tags = {
+    Environment = "Dev"
+    Service     = "Mr. Bot"
+  }
 }
 
 resource "aws_subnet" "public" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = var.vpc_cidr
   map_public_ip_on_launch = true
+
+  tags = {
+    Environment = "Dev"
+    Service     = "Mr. Bot"
+  }
 }
 
 resource "aws_internet_gateway" "gw" {
   vpc_id = aws_vpc.main.id
+
+  tags = {
+    Environment = "Dev"
+    Service     = "Mr. Bot"
+  }
 }
 
 resource "aws_route_table" "public" {
@@ -18,6 +33,11 @@ resource "aws_route_table" "public" {
   route {
     cidr_block = var.public_route_cidr
     gateway_id = aws_internet_gateway.gw.id
+  }
+
+  tags = {
+    Environment = "Dev"
+    Service     = "Mr. Bot"
   }
 }
 
@@ -28,6 +48,11 @@ resource "aws_route_table_association" "a" {
 
 resource "aws_ecs_cluster" "main" {
   name = var.ecs_cluster_name
+
+  tags = {
+    Environment = "Dev"
+    Service     = "Mr. Bot"
+  }
 }
 
 resource "aws_ecs_task_definition" "app" {
@@ -58,14 +83,25 @@ resource "aws_ecs_service" "app" {
   task_definition = aws_ecs_task_definition.app.arn
   desired_count   = 2
   launch_type     = "FARGATE"
+  propagate_tags  = "TASK_DEFINITION"
   network_configuration {
     subnets          = [aws_subnet.public.id]
     assign_public_ip = true
+  }
+
+  tags = {
+    Environment = "Dev"
+    Service     = "Mr. Bot"
   }
 }
 
 resource "aws_network_acl" "main" {
   vpc_id = aws_vpc.main.id
+
+  tags = {
+    Environment = "Dev"
+    Service     = "Mr. Bot"
+  }
 }
 
 resource "aws_network_acl_rule" "allow_http_inbound" {
