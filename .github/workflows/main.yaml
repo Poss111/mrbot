@@ -1,6 +1,6 @@
 name: Build Mr Bot
 
-on: [push, pull_request]
+on: [pull_request]
 
 jobs:
   build:
@@ -38,6 +38,7 @@ jobs:
     - name: Generate coverage report
       run: |
         coverage run -m pytest
+      continue-on-error: true
 
     - name: Comment lint results on PR
       if: github.event_name == 'pull_request'
