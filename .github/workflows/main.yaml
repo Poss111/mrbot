@@ -83,8 +83,8 @@ jobs:
           });
 
     - name: Check if linting failed
-      run: exit ${{ steps.lint.outcome }}
+      run: if [ ${{ steps.lint.outcome }} -ne 'success' ]; then exit 1; fi
 
     - name: Check if tests failed
-      run: exit ${{ steps.pytest.outcome }}
+      run: if [ ${{ steps.coverage.outcome }} -ne 'success' ]; then exit 1; fi
       
