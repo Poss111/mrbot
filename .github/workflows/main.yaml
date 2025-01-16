@@ -32,10 +32,13 @@ jobs:
       with: 
         result-encoding: string
         script: |
-          # stop the build if there are Python syntax errors or undefined names
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+          const { execSync } = require('child_process');
+          try {
+            const result = execSync('flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics && flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics', { encoding: 'utf-8' });
+            return result;
+          } catch (error) {
+            return error.stdout;
+          }
       continue-on-error: true
 
     - name: Generate coverage report
@@ -44,7 +47,13 @@ jobs:
       with: 
         result-encoding: string
         script: |
-          coverage run -m pytest
+          const { execSync } = require('child_process');
+          try {
+            const result = execSync('coverage run -m pytest', { encoding: 'utf-8' });
+            return result;
+          } catch (error) {
+            return error.stdout;
+          }
       continue-on-error: true
 
     - name: Comment lint results on PR
