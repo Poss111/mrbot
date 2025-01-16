@@ -31,7 +31,6 @@ jobs:
       id: lint
       with: 
         result-encoding: string
-        debug: true
         script: |
           const { execSync } = require('child_process');
           let results;
@@ -40,7 +39,7 @@ jobs:
           } catch (error) {
             results = error;
           }
-          if github.event_name == 'pull_request' {
+          if (github.event_name == 'pull_request') {
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
@@ -58,7 +57,6 @@ jobs:
       id: coverage
       with: 
         result-encoding: string
-        debug: true
         script: |
           const { execSync } = require('child_process');
           let results;
@@ -67,7 +65,7 @@ jobs:
           } catch (error) {
             results = error;
           }
-          if github.event_name == 'pull_request' {
+          if (github.event_name == 'pull_request') {
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
