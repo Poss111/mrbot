@@ -38,7 +38,7 @@ jobs:
     - name: Run tests with pytest
       id: pytest
       run: |
-        pytest --cov=.
+        pytest --cov --cov-report=xml
       continue-on-error: true
 
     - name: Generate coverage report
