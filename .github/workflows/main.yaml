@@ -40,14 +40,14 @@ jobs:
           } catch (error) {
             results = error;
           }
-          if github.event_name == 'pull_request' {
+          # if github.event_name == 'pull_request' {
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: `### Lint Results\n\`\`\`\n${lintOutput}\n\`\`\``
             });
-          }
+          # }
           if (results instanceof Error) {
             throw results;
           }
