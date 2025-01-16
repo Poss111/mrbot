@@ -29,6 +29,8 @@ jobs:
     - name: Lint with flake8
       uses: actions/github-script@v7
       id: lint
+      env:
+        GITHUB_EVENT: ${{ github.event_name }}
       with: 
         result-encoding: string
         script: |
@@ -39,8 +41,8 @@ jobs:
           } catch (error) {
             results = error;
           }
-          console.log(github.event_name);
-          if (github.event_name == 'pull_request') {
+          console.log(process.env.GITHUB_EVENT);
+          if (process.env.GITHUB_EVENT == 'pull_request') {
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
@@ -56,6 +58,8 @@ jobs:
     - name: Generate coverage report
       uses: actions/github-script@v7
       id: coverage
+      env:
+        GITHUB_EVENT: ${{ github.event_name }}
       with: 
         result-encoding: string
         script: |
@@ -66,7 +70,7 @@ jobs:
           } catch (error) {
             results = error;
           }
-          if (github.event_name == 'pull_request') {
+          if (process.env.GITHUB_EVENT == 'pull_request') {
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
