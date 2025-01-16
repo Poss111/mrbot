@@ -44,7 +44,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `### Lint Results\n\`\`\`\n${results}\n\`\`\``
+              body: `## Lint Results <details>\n<summary>Output</summary>\`\`\`\n${results}\n\`\`\`\n</details>`
             });
           }
           if (results instanceof Error) {
@@ -70,7 +70,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## Test Results\n\n### Coverage Report\n\`\`\`\n${results}\n\`\`\``
+              body: `## Test Results\n\n<details>\n<summary>Coverage Report</summary>\n\n\`\`\`\n${results}\n\`\`\`\n</details>`
             });
           }
           if (results instanceof Error) {
