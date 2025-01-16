@@ -40,14 +40,14 @@ jobs:
           } catch (error) {
             results = error;
           }
-          # if github.event_name == 'pull_request' {
+          if github.event_name == 'pull_request' {
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `### Lint Results\n\`\`\`\n${lintOutput}\n\`\`\``
+              body: `### Lint Results\n\`\`\`\n${results}\n\`\`\``
             });
-          # }
+          }
           if (results instanceof Error) {
             throw results;
           }
@@ -72,7 +72,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## Test Results\n\n### Coverage Report\n\`\`\`\n${coverageOutput}\n\`\`\``
+              body: `## Test Results\n\n### Coverage Report\n\`\`\`\n${results}\n\`\`\``
             });
           }
           if (results instanceof Error) {
