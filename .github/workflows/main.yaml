@@ -39,7 +39,7 @@ jobs:
       id: pytest
       run: |
         pytest --cov=.
-        continue-on-error: true
+      continue-on-error: true
 
     - name: Generate coverage report
       run: |
@@ -73,3 +73,10 @@ jobs:
             repo: context.repo.repo,
             body: `### Test Results\n\`\`\`\n${testOutput}\n\`\`\`\n\n### Coverage Report\n\`\`\`\n${coverageOutput}\n\`\`\``
           });
+
+    - name: Check if linting failed
+      run: exit ${{ steps.lint.outcome }}
+
+    - name: Check if tests failed
+      run: exit ${{ steps.pytest.outcome }}
+      
