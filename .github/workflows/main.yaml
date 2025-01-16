@@ -3,33 +3,73 @@ name: Build Mr Bot
 on: [push, pull_request]
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
 
-        strategy:
-            matrix:
-                python-version: [3.13]
+    strategy:
+      matrix:
+        python-version: [3.13]
 
-        steps:
-        - name: Checkout repository
-          uses: actions/checkout@v2
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-        - name: Set up Python ${{ matrix.python-version }}
-          uses: actions/setup-python@v2
-          with:
-              python-version: ${{ matrix.python-version }}
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
 
-        - name: Install dependencies
-          run: |
-                python -m pip install --upgrade pip
-                pip install flake8 pytest
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 pytest
 
-        - name: Lint with flake8
-          run: |
-                # stop the build if there are Python syntax errors or undefined names
-                flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-                # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-                flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Lint with flake8
+      id: lint
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      continue-on-error: true
 
-        - name: Run tests with pytest
-          run: pytest
+    - name: Run tests with pytest
+      id: pytest
+      run: |
+        pytest --cov=.
+        continue-on-error: true
+
+    - name: Generate coverage report
+      run: |
+        pip install coverage
+        coverage xml
+        coverage report
+
+    - name: Comment lint results on PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v3
+      with:
+        script: |
+          const lintOutput = `{{ steps.lint.outputs.stdout }}`;
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `### Lint Results\n\`\`\`\n${lintOutput}\n\`\`\``
+          });
+
+    - name: Comment test results on PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v3
+      with:
+        script: |
+          const testOutput = `{{ steps.pytest.outputs.stdout }}`;
+          const coverageOutput = `{{ steps.coverage.outputs.stdout }}`;
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `### Test Results\n\`\`\`\n${testOutput}\n\`\`\`\n\n### Coverage Report\n\`\`\`\n${coverageOutput}\n\`\`\``
+          });
