@@ -24,7 +24,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install flake8 pytest
+        pip install flake8 pytest coverage
 
     - name: Lint with flake8
       id: lint
@@ -35,17 +35,9 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       continue-on-error: true
 
-    - name: Run tests with pytest
-      id: pytest
-      run: |
-        pytest --cov --cov-report=xml
-      continue-on-error: true
-
     - name: Generate coverage report
       run: |
-        pip install coverage
-        coverage xml
-        coverage report
+        coverage run -m pytest
 
     - name: Comment lint results on PR
       if: github.event_name == 'pull_request'
@@ -65,13 +57,12 @@ jobs:
       uses: actions/github-script@v3
       with:
         script: |
-          const testOutput = `{{ steps.pytest.outputs.stdout }}`;
           const coverageOutput = `{{ steps.coverage.outputs.stdout }}`;
           github.rest.issues.createComment({
             issue_number: context.issue.number,
             owner: context.repo.owner,
             repo: context.repo.repo,
-            body: `### Test Results\n\`\`\`\n${testOutput}\n\`\`\`\n\n### Coverage Report\n\`\`\`\n${coverageOutput}\n\`\`\``
+            body: `## Test Results\n\n### Coverage Report\n\`\`\`\n${coverageOutput}\n\`\`\``
           });
 
     - name: Check if linting failed
