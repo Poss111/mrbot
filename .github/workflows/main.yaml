@@ -39,6 +39,7 @@ jobs:
           } catch (error) {
             results = error;
           }
+          console.log(github.event_name);
           if (github.event_name == 'pull_request') {
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
