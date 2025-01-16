@@ -33,13 +33,24 @@ jobs:
         result-encoding: string
         script: |
           const { execSync } = require('child_process');
+          let results;
           try {
-            const result = execSync('flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics && flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics', { encoding: 'utf-8' });
-            return result;
+            results = execSync('flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics && flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics', { encoding: 'utf-8' });
           } catch (error) {
-            return error.stdout;
+            results = error;
           }
-      continue-on-error: true
+          if github.event_name == 'pull_request' {
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `### Lint Results\n\`\`\`\n${lintOutput}\n\`\`\``
+            });
+          }
+          if (results instanceof Error) {
+            throw results;
+          }
+          return results;
 
     - name: Generate coverage report
       uses: actions/github-script@v7
@@ -48,43 +59,22 @@ jobs:
         result-encoding: string
         script: |
           const { execSync } = require('child_process');
+          let results;
           try {
-            const result = execSync('coverage run -m pytest', { encoding: 'utf-8' });
-            return result;
+            results = execSync('coverage run -m pytest', { encoding: 'utf-8' });
           } catch (error) {
-            return error.stdout;
+            results = error;
           }
-      continue-on-error: true
-
-    - name: Comment lint results on PR
-      if: github.event_name == 'pull_request'
-      uses: actions/github-script@v7.0.1
-      with:
-        script: |
-          const lintOutput = `${{ steps.lint.outputs.result }}`;
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: `### Lint Results\n\`\`\`\n${lintOutput}\n\`\`\``
-          });
-
-    - name: Comment test results on PR
-      if: github.event_name == 'pull_request'
-      uses: actions/github-script@v7.0.1
-      with:
-        script: |
-          const coverageOutput = `${{ steps.coverage.outputs.result }}`;
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: `## Test Results\n\n### Coverage Report\n\`\`\`\n${coverageOutput}\n\`\`\``
-          });
-
-    - name: Check if linting failed
-      run: if [ ${{ steps.lint.outcome }} -ne 'success' ]; then exit 1; fi
-
-    - name: Check if tests failed
-      run: if [ ${{ steps.coverage.outcome }} -ne 'success' ]; then exit 1; fi
+          if github.event_name == 'pull_request' {
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Test Results\n\n### Coverage Report\n\`\`\`\n${coverageOutput}\n\`\`\``
+            });
+          }
+          if (results instanceof Error) {
+            throw results;
+          }
+          return results;
       
