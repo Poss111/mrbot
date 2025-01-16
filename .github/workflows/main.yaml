@@ -36,18 +36,20 @@ jobs:
         script: |
           const { execSync } = require('child_process');
           let results;
+          let prOutput;
           try {
             results = execSync('flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics && flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics', { encoding: 'utf-8' });
+            prOutput = results;
           } catch (error) {
             results = error;
+            prOutput = error.stdout;
           }
-          console.log(process.env.GITHUB_EVENT);
           if (process.env.GITHUB_EVENT == 'pull_request') {
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## Lint Results <details>\n<summary>Output</summary>\`\`\`\n${results}\n\`\`\`\n</details>`
+              body: `## Lint Results <details>\n<summary>Output</summary>\`\`\`\n${prOutput}\n\`\`\`\n</details>`
             });
           }
           if (results instanceof Error) {
@@ -65,17 +67,20 @@ jobs:
         script: |
           const { execSync } = require('child_process');
           let results;
+          let prOutput;
           try {
             results = execSync('coverage run -m pytest', { encoding: 'utf-8' });
+            prOutput = results;
           } catch (error) {
             results = error;
+            prOutput = error.stdout;
           }
           if (process.env.GITHUB_EVENT == 'pull_request') {
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## Test Results\n\n<details>\n<summary>Coverage Report</summary>\n\n\`\`\`\n${results}\n\`\`\`\n</details>`
+              body: `## Test Results\n\n<details>\n<summary>Coverage Report</summary>\n\n\`\`\`\n${prOutput}\n\`\`\`\n</details>`
             });
           }
           if (results instanceof Error) {
