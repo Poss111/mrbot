@@ -64,7 +64,7 @@ jobs:
       id: coverage
       env:
         GITHUB_EVENT: ${{ github.event_name }}
-        TEST_CMD: coverage run -m pytest
+        TEST_CMD: coverage run -m pytest && coverage report -m
       with: 
         result-encoding: string
         script: |
