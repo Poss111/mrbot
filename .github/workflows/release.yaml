@@ -7,10 +7,6 @@ on:
           description: "The environment to deploy (e.g., staging, production)"
           required: true
           default: "main - us-east-1"
-        selected_tag:
-            description: "The Git tag to build and release (e.g., v1.0.0)"
-            required: true
-            default: "latest"
 
 jobs:
     build:
@@ -26,11 +22,8 @@ jobs:
               with:
                   fetch-depth: 0
 
-            - name: Verify input tag
-              run: |
-                  echo "Checking out tag ${{ github.event.inputs.selected_tag }}"
-                  git fetch --tags
-                  git checkout tags/${{ github.event.inputs.selected_tag }}
+            - uses: olegtarasov/get-tag@v2.1.4
+              id: tagName
 
             - name: Extract repository name
               id: extract_repo_name
@@ -43,12 +36,13 @@ jobs:
                   echo "IMAGE_NAME=$REPO_NAME" >> $GITHUB_ENV
                   
             - name: Create Image URI
+              id: create_image_uri
+              env:
+                TAG_NAME: ${{ steps.tagName.outputs.tag }}
               run: |
                   echo "Creating image name and tag"
-                  echo "IMAGE_NAME=$REPO_NAME" >> $GITHUB_ENV
-                  echo "IMAGE_TAG=${{ github.event.inputs.selected_tag }}" >> $GITHUB_ENV
-                  echo "IMAGE_URI=$REPO_NAME:${{ github.event.inputs.selected_tag }}" >> $GITHUB_ENV
-                  echo "Image URI -> $REPO_NAME:${{ github.event.inputs.selected_tag }}"
+                  echo "IMAGE_URI=$IMAGE_NAME:$GIT_TAG_NAME" >> $GITHUB_ENV
+                  echo "Image URI -> $IMAGE_NAME:$GIT_TAG_NAME"
 
             - name: Build Docker image
               run: |
