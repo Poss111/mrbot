@@ -46,8 +46,13 @@ resource "aws_route_table_association" "a" {
   route_table_id = aws_route_table.public.id
 }
 
-resource "aws_ecs_cluster" "main" {
-  name = var.ecs_cluster_name
+resource "aws_eks_cluster" "main" {
+  name     = var.eks_cluster_name
+  role_arn = aws_iam_role.eks_cluster.arn
+
+  vpc_config {
+    subnet_ids = [aws_subnet.public.id]
+  }
 
   tags = {
     Environment = "Dev"
@@ -55,44 +60,91 @@ resource "aws_ecs_cluster" "main" {
   }
 }
 
-resource "aws_ecs_task_definition" "app" {
-  family                   = "app"
-  network_mode             = "awsvpc"
-  requires_compatibilities = ["FARGATE"]
-  cpu                      = var.task_cpu
-  memory                   = var.task_memory
+resource "aws_iam_role" "eks_cluster" {
+  name = "eks_cluster_role"
 
-  container_definitions = jsonencode([
-    {
-      name      = var.container_name
-      image     = var.container_image
-      essential = true
-      portMappings = [
-        {
-          containerPort = var.container_port
-          hostPort      = var.host_port
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "eks.amazonaws.com"
         }
-      ]
-    }
-  ])
+      }
+    ]
+  })
+
+  tags = {
+    Environment = "Dev"
+    Service     = "Mr. Bot"
+  }
 }
 
-resource "aws_ecs_service" "app" {
-  name            = var.ecs_service_name
-  cluster         = aws_ecs_cluster.main.id
-  task_definition = aws_ecs_task_definition.app.arn
-  desired_count   = 1
-  launch_type     = "FARGATE"
-  propagate_tags  = "TASK_DEFINITION"
-  network_configuration {
-    subnets          = [aws_subnet.public.id]
-    assign_public_ip = true
+resource "aws_iam_role_policy_attachment" "eks_cluster_AmazonEKSClusterPolicy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+  role       = aws_iam_role.eks_cluster.name
+}
+
+resource "aws_iam_role_policy_attachment" "eks_cluster_AmazonEKSServicePolicy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSServicePolicy"
+  role       = aws_iam_role.eks_cluster.name
+}
+
+resource "aws_eks_node_group" "main" {
+  cluster_name    = aws_eks_cluster.main.name
+  node_group_name = var.eks_node_group_name
+  node_role_arn   = aws_iam_role.eks_node.arn
+  subnet_ids      = [aws_subnet.public.id]
+
+  scaling_config {
+    desired_size = 1
+    max_size     = 2
+    min_size     = 1
   }
 
   tags = {
     Environment = "Dev"
     Service     = "Mr. Bot"
   }
+}
+
+resource "aws_iam_role" "eks_node" {
+  name = "eks_node_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  tags = {
+    Environment = "Dev"
+    Service     = "Mr. Bot"
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "eks_node_AmazonEKSWorkerNodePolicy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+  role       = aws_iam_role.eks_node.name
+}
+
+resource "aws_iam_role_policy_attachment" "eks_node_AmazonEC2ContainerRegistryReadOnly" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+  role       = aws_iam_role.eks_node.name
+}
+
+resource "aws_iam_role_policy_attachment" "eks_node_AmazonEKS_CNI_Policy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+  role       = aws_iam_role.eks_node.name
 }
 
 resource "aws_network_acl" "main" {

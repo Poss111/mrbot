@@ -61,3 +61,15 @@ variable "ecs_service_name" {
   type        = string
   default     = "main-service"
 }
+
+variable "eks_cluster_name" {
+  description = "The name of the EKS cluster"
+  type        = string
+  default     = "main-cluster"
+}
+
+variable "eks_node_group_name" {
+  description = "The name of the EKS node group"
+  type        = string
+  default     = "main-node-group"
+}
