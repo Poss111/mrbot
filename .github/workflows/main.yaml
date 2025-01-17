@@ -32,6 +32,7 @@ jobs:
       id: lint
       env:
         GITHUB_EVENT: ${{ github.event_name }}
+        LINT_CMD: pylint leaguetracker/**/*.py --disable=R,C
       with: 
         result-encoding: string
         script: |
@@ -39,7 +40,7 @@ jobs:
           let results;
           let prOutput;
           try {
-            results = execSync('flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics && flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics', { encoding: 'utf-8' });
+            results = execSync(process.env.LINT_CMD, { encoding: 'utf-8' });
             prOutput = results;
           } catch (error) {
             results = error;
@@ -63,6 +64,7 @@ jobs:
       id: coverage
       env:
         GITHUB_EVENT: ${{ github.event_name }}
+        TEST_CMD: coverage run -m pytest
       with: 
         result-encoding: string
         script: |
@@ -70,7 +72,7 @@ jobs:
           let results;
           let prOutput;
           try {
-            results = execSync('coverage run -m pytest', { encoding: 'utf-8' });
+            results = execSync(process.env.TEST_CMD, { encoding: 'utf-8' });
             prOutput = results;
           } catch (error) {
             results = error;
