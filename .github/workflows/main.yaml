@@ -1,0 +1,93 @@
+name: Build Mr Bot
+
+on: [pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+
+    strategy:
+      matrix:
+        python-version: [3.13]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install flake8 pytest coverage
+
+    - name: Lint with flake8
+      uses: actions/github-script@v7
+      id: lint
+      env:
+        GITHUB_EVENT: ${{ github.event_name }}
+        LINT_CMD: pylint leaguetracker/**/*.py --disable=R,C
+      with: 
+        result-encoding: string
+        script: |
+          const { execSync } = require('child_process');
+          let results;
+          let prOutput;
+          try {
+            results = execSync(process.env.LINT_CMD, { encoding: 'utf-8' });
+            prOutput = results;
+          } catch (error) {
+            results = error;
+            prOutput = error.stdout;
+          }
+          if (process.env.GITHUB_EVENT == 'pull_request') {
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Lint Results\n\n<details>\n<summary>Output</summary>\n\n\`\`\`\n${prOutput}\n\`\`\`\n</details>`
+            });
+          }
+          if (results instanceof Error) {
+            throw results;
+          }
+          return results;
+
+    - name: Generate coverage report
+      uses: actions/github-script@v7
+      id: coverage
+      env:
+        GITHUB_EVENT: ${{ github.event_name }}
+        TEST_CMD: coverage run -m pytest && coverage report -m
+      with: 
+        result-encoding: string
+        script: |
+          const { execSync } = require('child_process');
+          let results;
+          let prOutput;
+          try {
+            results = execSync(process.env.TEST_CMD, { encoding: 'utf-8' });
+            prOutput = results;
+          } catch (error) {
+            results = error;
+            prOutput = error.stdout;
+          }
+          if (process.env.GITHUB_EVENT == 'pull_request') {
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Test Results\n\n<details>\n<summary>Coverage Report</summary>\n\n\`\`\`\n${prOutput}\n\`\`\`\n</details>`
+            });
+          }
+          if (results instanceof Error) {
+            throw results;
+          }
+          return results;
+      

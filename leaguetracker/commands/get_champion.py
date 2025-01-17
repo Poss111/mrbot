@@ -1,11 +1,9 @@
 """Module for base discord command"""
 import os
-import traceback
 import discord
 from discord.ext import commands
 from discord import app_commands
 
-from injector import inject
 from structlog.contextvars import (
     clear_contextvars, 
     bind_contextvars
@@ -36,7 +34,7 @@ class Champions(commands.Cog):
 
         matches = [name for name in champion_names if name.startswith(current)]
 
-        structlog.get_logger().debug(f"Filtering for {current}", matches=matches)
+        structlog.get_logger().debug(f"Filtering for {current}", matches=matches, command=interaction.command.name)
         
         # Trim to 25 matches
         matches = matches[:25]
