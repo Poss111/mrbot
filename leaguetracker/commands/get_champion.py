@@ -1,11 +1,9 @@
 """Module for base discord command"""
 import os
-import traceback
 import discord
 from discord.ext import commands
 from discord import app_commands
 
-from injector import inject
 from structlog.contextvars import (
     clear_contextvars, 
     bind_contextvars

@@ -1,4 +1,3 @@
-
 import asyncio
 import os
 import random
@@ -63,14 +62,6 @@ class MrBotClient(commands.Bot):
     async def on_ready(self):
         """Event listener for when the bot is ready"""
         self.log.info(f"Bot is ready! Logged in as {self.user}")
-
-    async def on_message(self, message: discord.Message):
-        """Event listener for when a message is received"""
-        if message.author == self.user:
-            return
-
-        if message.content == "ping":
-            await message.channel.send("pong")
     
     async def on_interaction(self, interaction: discord.Interaction):
         """Event listener for when an interaction occurs"""
@@ -84,8 +75,8 @@ class MrBotClient(commands.Bot):
             if filename.endswith('.py') and filename != "__init__.py":
                 try:
                     await self.load_extension(f"leaguetracker.commands.{filename[:-3]}")
-                except Exception as e:
-                    self.log.error(f"Failed to load cog: {filename}", error=e)    
+                except (discord.DiscordException, commands.ExtensionError) as e:
+                    self.log.error(f"Failed to load cog: {filename}", error=e)  
     
         # Sync commands
         self.log.info("Syncing commands...")
@@ -148,7 +139,7 @@ class MrBotClient(commands.Bot):
         """
         log = structlog.get_logger()
         
-        log.error(f"Unhandled slash command error", error=error)
+        log.error("Unhandled slash command error", error=error)
         
         embed = discord.Embed(title="Error")
         if isinstance(error, commands.CommandInvokeError):

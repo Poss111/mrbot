@@ -25,10 +25,9 @@ class RiotDDragonService:
             response.raise_for_status()
             return response.json()
         except requests.exceptions.HTTPError as http_error:
-            raise Exception(f"Error sending request to {url}: {http_error}")
+            raise requests.exceptions.RequestException(f"Error sending request to {url}: {http_error}") from http_error
         except Exception as e:
-            raise Exception(f"Error processing response from {url}: {e}")
-        return None
+            raise requests.exceptions.RequestException(f"Error processing response from {url}: {e}") from e
 
     async def retrieve_champion_list(self, riot_ddragon_version=None) -> RiotDDragonChampions:
         """Retrieve a list of champions from Riot's DDragon API"""
@@ -36,7 +35,7 @@ class RiotDDragonService:
         version = self._versions_cache.get('data')[0]
         if riot_ddragon_version is not None:
             if riot_ddragon_version not in self._versions_cache.get('data'):
-                raise Exception(f"Version {riot_ddragon_version} is not available from Riot's DDragon API")
+                raise ValueError(f"Version {riot_ddragon_version} is not available from Riot's DDragon API")
             version = riot_ddragon_version
         log = structlog.get_logger()
         log.info(f"Retrieving champion list from Riot's DDragon API for version {version}...")
@@ -49,7 +48,7 @@ class RiotDDragonService:
         version = self._versions_cache.get('data')[0]
         if riot_ddragon_version is not None:
             if riot_ddragon_version not in self._versions_cache.get('data'):
-                raise Exception(f"Version {riot_ddragon_version} is not available from Riot's DDragon API")
+                raise ValueError(f"Version {riot_ddragon_version} is not available from Riot's DDragon API")
             version = riot_ddragon_version
         log = structlog.get_logger()
         log.info(f"Retrieving champion {champion_id} from Riot's DDragon API for version {version}...")
