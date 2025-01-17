@@ -30,3 +30,5 @@ manifest.json
 
 # Infracost
 pricing.gob
+
+secrets.yaml
