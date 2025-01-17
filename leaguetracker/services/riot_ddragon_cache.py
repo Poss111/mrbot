@@ -8,7 +8,7 @@ class RiotDDragonCache:
     
     def __init__(self):
         """Initialize the cache"""
-        self.champion_list: RiotDDragonChampions = {}
+        self.champion_list: RiotDDragonChampions = RiotDDragonChampions(type="", format="", version="", data={})
 
     def get(self):
         """Get a value from the cache"""
