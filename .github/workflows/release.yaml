@@ -1,0 +1,73 @@
+name: Release Build
+
+on:
+    workflow_dispatch:
+      inputs:
+        environment:
+          description: "The environment to deploy (e.g., staging, production)"
+          required: true
+          default: "main - us-east-1"
+        selected_tag:
+            description: "The Git tag to build and release (e.g., v1.0.0)"
+            required: true
+            default: "latest"
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        environment: ${{ github.event.inputs.environment }}
+        permissions:
+            id-token: write
+            contents: read
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4.2.2
+              with:
+                  fetch-depth: 0
+
+            - name: Verify input tag
+              run: |
+                  echo "Checking out tag ${{ github.event.inputs.selected_tag }}"
+                  git fetch --tags
+                  git checkout tags/${{ github.event.inputs.selected_tag }}
+
+            - name: Extract repository name
+              id: extract_repo_name
+              run: |
+                  # Extract the repo name (the part after '/')
+                  REPO_NAME=$(basename "${GITHUB_REPOSITORY}")
+                  echo "Repository Name: $REPO_NAME"
+                  
+                  # Save the repo name as an environment variable
+                  echo "IMAGE_NAME=$REPO_NAME" >> $GITHUB_ENV
+                  
+            - name: Create Image URI
+              run: |
+                  echo "Creating image name and tag"
+                  echo "IMAGE_NAME=$REPO_NAME" >> $GITHUB_ENV
+                  echo "IMAGE_TAG=${{ github.event.inputs.selected_tag }}" >> $GITHUB_ENV
+                  echo "IMAGE_URI=$REPO_NAME:${{ github.event.inputs.selected_tag }}" >> $GITHUB_ENV
+                  echo "Image URI -> $REPO_NAME:${{ github.event.inputs.selected_tag }}"
+
+            - name: Build Docker image
+              run: |
+                docker build -t ${{ env.IMAGE_URI }} .
+
+            - name: Assume AWS workload identity
+              id: assume-role
+              uses: aws-actions/configure-aws-credentials@v4.0.2
+              with:
+                  role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ROLE_NAME }}
+                  aws-region: ${{ secrets.AWS_REGION }}
+
+            - name: Log in to Amazon ECR
+              uses: aws-actions/amazon-ecr-login@v1
+
+            - name: Tag Docker image
+              run: |
+                    docker tag ${{ env.IMAGE_URI }} ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ env.IMAGE_URI }}
+
+            - name: Push Docker image to ECR
+              run: |
+                    docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ env.IMAGE_URI }}
