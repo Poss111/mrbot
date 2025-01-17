@@ -34,7 +34,7 @@ class Champions(commands.Cog):
 
         matches = [name for name in champion_names if name.startswith(current)]
 
-        structlog.get_logger().debug(f"Filtering for {current}", matches=matches)
+        structlog.get_logger().debug(f"Filtering for {current}", matches=matches, command=interaction.command.name)
         
         # Trim to 25 matches
         matches = matches[:25]
