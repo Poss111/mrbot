@@ -14,5 +14,5 @@ TASK_JSON_PATH=$4
 
 # Use jq to update the task definition
 jq --arg CPU "$CPU" --arg MEMORY "$MEMORY" --arg EXEC_ROLE_ARN "$EXECUTION_ROLE_ARN" \
-   '.containerDefinitions[0].cpu = $CPU | .containerDefinitions[0].memory = $MEMORY | .executionRoleArn = $EXEC_ROLE_ARN' \
+'.containerDefinitions[0].cpu = ($CPU | tonumber) | .cpu = ($CPU | tonumber) | .containerDefinitions[0].memory = ($MEMORY | tonumber) | .memory = ($MEMORY | tonumber) | .executionRoleArn = $EXEC_ROLE_ARN' \
    "$TASK_JSON_PATH" > "${TASK_JSON_PATH%.json}-updated.json"
