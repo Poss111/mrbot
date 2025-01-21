@@ -121,5 +121,5 @@ jobs:
               awslogs-stream-prefix=ecs
 
         - name: Print the rendered task definition
-          run: echo "${{ steps.render-web-container.outputs.task-definition }}"
+          run: echo "$(cat ${{ steps.render-web-container.outputs.task-definition }})"
 
