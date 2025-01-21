@@ -91,3 +91,35 @@ jobs:
           }
           return results;
       
+  testECSTaskDefRendering:
+    runs-on: ubuntu-latest
+        
+    steps:
+        - name: Checkout repository
+          uses: actions/checkout@v2
+
+        - name: Render Amazon ECS task definition
+          id: render-web-container
+          uses: aws-actions/amazon-ecs-render-task-definition@v1.6.2
+          with:
+            task-definition: ecs/task-definition.json
+            task-definition-family: discord-bot
+            container-name: mr-bot
+            image: "testimage"
+            environment-variables: |
+              LOG_LEVEL=info
+              LOGGING_FORMAT=json
+              DISCORD_GUILD_ID=12332132131
+              FOOTER_MSG="© 2024 - Made with discord.py"
+              AUTHOR="1231239871269387621"
+            secrets: "DISCORD_TOKEN=secret"
+            log-configuration-log-driver: awslogs
+            log-configuration-options: |
+              awslogs-create-group=true
+              awslogs-group=/ecs/mrbot
+              awslogs-region=us-west-2
+              awslogs-stream-prefix=ecs
+
+        - name: Print the rendered task definition
+          run: echo "$(cat ${{ steps.render-web-container.outputs.task-definition }})"
+

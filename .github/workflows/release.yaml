@@ -56,12 +56,52 @@ jobs:
                   aws-region: ${{ secrets.AWS_REGION }}
 
             - name: Log in to Amazon ECR
-              uses: aws-actions/amazon-ecr-login@v1
+              uses: aws-actions/amazon-ecr-login@v2.0.1
 
             - name: Tag Docker image
-              run: |
-                    docker tag ${{ env.IMAGE_URI }} ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ env.IMAGE_URI }}
+              run: docker tag ${{ env.IMAGE_URI }} ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ env.IMAGE_URI }}
 
             - name: Push Docker image to ECR
+              run: docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ env.IMAGE_URI }}
+
+            - name: Inject initial parameters to task definition
+              env:
+                EXECUTION_ROLE_ARN: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_EXEC_ROLE_NAME }}
+                CPU: 256
+                MEMORY: 512
               run: |
-                    docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ env.IMAGE_URI }}
+                jq --arg CPU "$CPU" \
+                   --arg MEMORY "$MEMORY" \ 
+                   --arg EXEC_ROLE_ARN "$EXECUTION_ROLE_ARN" \
+                   '.containerDefinitions[0].cpu = $CPU | .containerDefinitions[0].memory = $MEMORY | .executionRoleArn = $EXEC_ROLE_ARN' task-definition.json > task-definition-updated.json
+
+            - name: Render Amazon ECS task definition
+              id: render-web-container
+              uses: aws-actions/amazon-ecs-render-task-definition@v1.6.2
+              with:
+                task-definition: task-definition-updated.json
+                task-definition-family: discord-bot
+                container-name: mr-bot
+                image: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ env.IMAGE_URI }}
+                environment-variables: |
+                  LOG_LEVEL=info
+                  LOGGING_FORMAT=json
+                  DISCORD_GUILD_ID=${{ env.DISCORD_GUILD_ID }}}
+                  FOOTER_MSG="© 2024 - Made with discord.py"
+                  AUTHOR="${{ env.AUTHOR }}"
+                secrets: "DISCORD_TOKEN=arn:aws:ssm:${{ secrets.AWS_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:parameter/${{ secrets.SSM_DISCORD_TOKEN_NAME }}"
+                log-configuration-log-driver: awslogs
+                log-configuration-options: |
+                  awslogs-create-group=true
+                  awslogs-group=/ecs/mrbot
+                  awslogs-region=${{ secrets.AWS_REGION }}
+                  awslogs-stream-prefix=ecs
+        
+            - name: Deploy to Amazon ECS service
+              uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+              with:
+                task-definition: ${{ steps.render-web-container.outputs.task-definition }}
+                service: ${{ secrets.AWS_ECS_SERVICE_NAME }}
+                cluster: ${{ secrets.AWS_ECS_CLUSTER_NAME }}
+                wait-for-service-stability: true
+                
