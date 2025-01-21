@@ -14,4 +14,4 @@ EXECUTION_ROLE_ARN=$3
 # Use jq to update the task definition
 jq --arg CPU "$CPU" --arg MEMORY "$MEMORY" --arg EXEC_ROLE_ARN "$EXECUTION_ROLE_ARN" \
    '.containerDefinitions[0].cpu = $CPU | .containerDefinitions[0].memory = $MEMORY | .executionRoleArn = $EXEC_ROLE_ARN' \
-   task-definition.json > task-definition-updated.json
+   ../ecs/task-definition.json > ../ecs/task-definition-updated.json
