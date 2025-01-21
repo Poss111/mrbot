@@ -66,10 +66,11 @@ jobs:
 
             - name: Inject initial parameters to task definition
               env:
+                TASK_ROLE_ARN: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_TASK_ROLE_NAME }}
                 EXECUTION_ROLE_ARN: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_EXEC_ROLE_NAME }}
                 CPU: 256
                 MEMORY: 512
-              run: pipelineScripts/inject-into-task-def.sh $CPU $MEMORY $EXECUTION_ROLE_ARN ecs/task-definition.json
+              run: pipelineScripts/inject-into-task-def.sh $CPU $MEMORY $EXECUTION_ROLE_ARN $TASK_ROLE_ARN ecs/task-definition.json
 
             - name: Render Amazon ECS task definition
               id: render-web-container
@@ -82,9 +83,9 @@ jobs:
                 environment-variables: |
                   LOG_LEVEL=info
                   LOGGING_FORMAT=json
-                  DISCORD_GUILD_ID=${{ env.DISCORD_GUILD_ID }}}
+                  DISCORD_GUILD_ID=${{ vars.DISCORD_GUILD_ID }}}
                   FOOTER_MSG="© 2024 - Made with discord.py"
-                  AUTHOR="${{ env.AUTHOR }}"
+                  AUTHOR="${{ vars.AUTHOR }}"
                 secrets: "DISCORD_TOKEN=arn:aws:ssm:${{ secrets.AWS_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:parameter/${{ secrets.SSM_DISCORD_TOKEN_NAME }}"
                 log-configuration-log-driver: awslogs
                 log-configuration-options: |
