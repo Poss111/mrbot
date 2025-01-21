@@ -7,6 +7,7 @@ from discord.ext import commands
 from injector import Injector, inject
 import structlog
 
+from leaguetracker.configs.app_configs import AppConfigs
 from leaguetracker.configs.environment_variables import EnvVariables
 
 
@@ -57,6 +58,7 @@ class MrBotClient(commands.Bot):
         self.tree.on_error = MrBotClient.tree_on_error
         self.injector = injector
         self.log = logger
+        self.configs = injector.get(AppConfigs)
         
 
     async def on_ready(self):

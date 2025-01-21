@@ -19,6 +19,9 @@ from leaguetracker.handlers.get_champion_handler import GetChampionHandler
 from leaguetracker.configs.mr_bot_client import MrBotClient
 from leaguetracker.models.get_champion_embed import GetChampionEmbed
 
+from leaguetracker.configs.app_configs import AppConfigs
+from leaguetracker.configs.env_var_app_configs import EnvVarAppConfigs
+
 load_dotenv()
 setup_logging()
 
@@ -26,6 +29,12 @@ log = structlog.get_logger()
 
 class BotModule(Module):
     """Module for the bot. This class is responsible for setting up the bot's dependencies."""
+    
+    @singleton
+    @provider
+    def configuration(self) -> AppConfigs:
+        """Creates an AppConfigs instance."""
+        return EnvVarAppConfigs()
     
     @singleton
     @provider
@@ -54,11 +63,11 @@ class BotModule(Module):
         return MrBotClient(intents, log, injector)
 
     @provider
-    def get_champion_embed(self) -> GetChampionEmbed:
+    def get_champion_embed(self, configuration: AppConfigs) -> GetChampionEmbed:
         """Creates a GetChampionEmbed instance."""
         return GetChampionEmbed(
-            os.getenv(EnvVariables.FOOTER_MSG.name), 
-            os.getenv(EnvVariables.AUTHOR.name)
+            configuration.get_footer_msg(),
+            configuration.get_author()
         )
 
 if __name__ == "__main__":
