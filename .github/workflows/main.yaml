@@ -95,6 +95,9 @@ jobs:
     runs-on: ubuntu-latest
         
     steps:
+        - name: Checkout repository
+          uses: actions/checkout@v2
+
         - name: Render Amazon ECS task definition
           id: render-web-container
           uses: aws-actions/amazon-ecs-render-task-definition@v1.6.2
