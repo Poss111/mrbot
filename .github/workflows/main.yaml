@@ -99,7 +99,7 @@ jobs:
           id: render-web-container
           uses: aws-actions/amazon-ecs-render-task-definition@v1.6.2
           with:
-            task-definition: task-definition-updated.json
+            task-definition: ecs/task-definition.json
             task-definition-family: discord-bot
             container-name: mr-bot
             image: "testimage"
