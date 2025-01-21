@@ -83,14 +83,14 @@ jobs:
                 environment-variables: |
                   LOG_LEVEL=info
                   LOGGING_FORMAT=json
-                  DISCORD_GUILD_ID=${{ vars.DISCORD_GUILD_ID }}}
-                  FOOTER_MSG="© 2024 - Made with discord.py"
-                  AUTHOR="${{ vars.AUTHOR }}"
-                secrets: "DISCORD_TOKEN=arn:aws:ssm:${{ secrets.AWS_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:parameter/${{ secrets.SSM_DISCORD_TOKEN_NAME }}"
+                  DISCORD_GUILD_ID=${{ vars.DISCORD_GUILD_ID }}
+                  FOOTER_MSG=© 2024 - Made with discord.py
+                  AUTHOR=${{ vars.AUTHOR }} 
+                secrets: "DISCORD_TOKEN=arn:aws:secretsmanager:${{ secrets.AWS_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:secret:${{ secrets.SSM_DISCORD_TOKEN_NAME }}"
                 log-configuration-log-driver: awslogs
                 log-configuration-options: |
                   awslogs-create-group=true
-                  awslogs-group=/ecs/mrbot
+                  awslogs-group=/ecs/discord-bot
                   awslogs-region=${{ secrets.AWS_REGION }}
                   awslogs-stream-prefix=ecs
         
