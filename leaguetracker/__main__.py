@@ -1,4 +1,5 @@
 """Main entry point for the bot. This file is responsible for setting up the bot and running it."""
+import json
 import logging
 import os
 import sys
@@ -81,10 +82,10 @@ if __name__ == "__main__":
         log.error("The DISCORD_TOKEN environment variable is not set. Exiting...")
         sys.exit(1)
     try:
-        token = os.getenv(EnvVariables.DISCORD_TOKEN.name)
+        kv_secret = json.loads(os.getenv(EnvVariables.DISCORD_TOKEN.name))
         # Strip the token after 10 chars to avoid leaking it in logs
-        log.info("Starting the bot...", token=token[:10])
-        mr_bot_instance.run(os.getenv(EnvVariables.DISCORD_TOKEN.name))
+        log.info("Starting the bot...", token=kv_secret['EnvVariables.DISCORD_TOKEN.name'][:10])
+        mr_bot_instance.run(kv_secret['EnvVariables.DISCORD_TOKEN.name'])
     except Exception as e:
         log.error("Whoops! Somethign went wrong when starting the bot.", error=e)
         sys.exit(1)
