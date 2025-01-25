@@ -77,4 +77,11 @@ if __name__ == "__main__":
     injector = Injector([BotModule()])
     # bot_instance = injector.call_with_injection(create_bot)
     mr_bot_instance = injector.get(MrBotClient)
-    mr_bot_instance.run(os.getenv(EnvVariables.DISCORD_TOKEN.name))
+    if (discord_token := os.getenv(EnvVariables.DISCORD_TOKEN.name)) is None:
+        log.error("The DISCORD_TOKEN environment variable is not set. Exiting...")
+        sys.exit(1)
+    try:
+        mr_bot_instance.run(os.getenv(EnvVariables.DISCORD_TOKEN.name))
+    except Exception as e:
+        log.error("Whoops! Somethign went wrong when starting the bot.", error=e)
+        sys.exit(1)
