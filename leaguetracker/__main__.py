@@ -81,6 +81,9 @@ if __name__ == "__main__":
         log.error("The DISCORD_TOKEN environment variable is not set. Exiting...")
         sys.exit(1)
     try:
+        token = os.getenv(EnvVariables.DISCORD_TOKEN.name)
+        # Strip the token after 10 chars to avoid leaking it in logs
+        log.info("Starting the bot...", token=token[:10])
         mr_bot_instance.run(os.getenv(EnvVariables.DISCORD_TOKEN.name))
     except Exception as e:
         log.error("Whoops! Somethign went wrong when starting the bot.", error=e)
