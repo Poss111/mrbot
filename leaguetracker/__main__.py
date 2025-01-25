@@ -84,8 +84,8 @@ if __name__ == "__main__":
     try:
         kv_secret = json.loads(os.getenv(EnvVariables.DISCORD_TOKEN.name))
         # Strip the token after 10 chars to avoid leaking it in logs
-        log.info("Starting the bot...", token=kv_secret['EnvVariables.DISCORD_TOKEN.name'][:10])
-        mr_bot_instance.run(kv_secret['EnvVariables.DISCORD_TOKEN.name'])
+        log.info("Starting the bot...", token=kv_secret[EnvVariables.DISCORD_TOKEN.name][:10])
+        mr_bot_instance.run(kv_secret[EnvVariables.DISCORD_TOKEN.name])
     except Exception as e:
         log.error("Whoops! Somethign went wrong when starting the bot.", error=e)
         sys.exit(1)
