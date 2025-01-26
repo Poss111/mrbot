@@ -32,3 +32,6 @@ manifest.json
 pricing.gob
 
 secrets.yaml
+
+manifest*.json
+task-definition-updated.json
