@@ -17,23 +17,29 @@ class TestGetChampionEmbed:
         embed = embed_creator.create_embed("Aatrox", champion_data.data.get(champion_name))
         
         assert embed.title == champion_name
-        assert embed.description == champion_data.data.get(champion_name).lore
+        assert embed.description == f"> {champion_data.data.get(champion_name).lore}"
         # Verify that the ally tips are in the embed
-        assert embed.fields[0].name == "Ally Tips"
-        assert embed.fields[1].name == "Tip 1"
-        assert embed.fields[1].value == champion_data.data.get(champion_name).allytips[0]
-        assert embed.fields[2].name == "Tip 2"
-        assert embed.fields[2].value == champion_data.data.get(champion_name).allytips[1]
-        assert embed.fields[3].name == "Tip 3"
-        assert embed.fields[3].value == champion_data.data.get(champion_name).allytips[2]
+        assert embed.fields[0].name == ":trophy: Ally Tips"
+        assert embed.fields[0].inline
+        assert embed.fields[0].value == (
+            f"**Tip 1**\n\n"
+            f"> {champion_data.data.get(champion_name).allytips[0]}\n\n"
+            f"**Tip 2**\n\n"
+            f"> {champion_data.data.get(champion_name).allytips[1]}\n\n"
+            f"**Tip 3**\n\n"
+            f"> {champion_data.data.get(champion_name).allytips[2]}\n\n"
+        )
         # Verify that the enemy tips are in the embed
-        assert embed.fields[4].name == "Enemy Tips"
-        assert embed.fields[5].name == "Tip 1"
-        assert embed.fields[5].value == champion_data.data.get(champion_name).enemytips[0]
-        assert embed.fields[6].name == "Tip 2"
-        assert embed.fields[6].value == champion_data.data.get(champion_name).enemytips[1]
-        assert embed.fields[7].name == "Tip 3"
-        assert embed.fields[7].value == champion_data.data.get(champion_name).enemytips[2]
+        assert embed.fields[1].name == ":crossed_swords: Enemy Tips"
+        assert embed.fields[1].inline
+        assert embed.fields[1].value == (
+            f"**Tip 1**\n\n"
+            f"> {champion_data.data.get(champion_name).enemytips[0]}\n\n"
+            f"**Tip 2**\n\n"
+            f"> {champion_data.data.get(champion_name).enemytips[1]}\n\n"
+            f"**Tip 3**\n\n"
+            f"> {champion_data.data.get(champion_name).enemytips[2]}\n\n"
+        )
 
     def test_create_embed_without_tips(self):
         """Test creating an embed without ally and enemy tips"""
@@ -46,13 +52,15 @@ class TestGetChampionEmbed:
         embed = embed_creator.create_embed(champion_name, champion_indepth_data)
         
         assert embed.title == champion_name
-        assert embed.description == champion_indepth_data.lore
+        assert embed.description == "> {0}".format(champion_indepth_data.lore)
         # Verify that the ally tips are not in the embed
-        assert embed.fields[0].name == "Ally Tips"
-        assert embed.fields[0].value == "No tips available"
+        assert embed.fields[0].name == ":trophy: Ally Tips"
+        assert embed.fields[0].value == "No tips available :cry:"
+        assert embed.fields[1].inline is True
         # Verify that the enemy tips are not in the embed
-        assert embed.fields[1].name == "Enemy Tips"
-        assert embed.fields[1].value == "No tips available"
+        assert embed.fields[1].name == ":crossed_swords: Enemy Tips"
+        assert embed.fields[1].value == "No tips available :cry:"
+        assert embed.fields[1].inline is True
     
     def test_create_embed_with_no_ally_tips_and_enemy_tips(self):
         """Test creating an embed with empty ally and enemy tips"""
@@ -64,18 +72,22 @@ class TestGetChampionEmbed:
         embed = embed_creator.create_embed(champion_name, champion_indepth_data)
         
         assert embed.title == champion_name
-        assert embed.description == champion_indepth_data.lore
+        assert embed.description == "> {0}".format(champion_indepth_data.lore)
         # Verify that the ally tips are not in the embed
-        assert embed.fields[0].name == "Ally Tips"
-        assert embed.fields[0].value == "No tips available"
+        assert embed.fields[0].name == ":trophy: Ally Tips"
+        assert embed.fields[0].value == "No tips available :cry:"
+        assert embed.fields[1].inline is True
         # Verify that the enemy tips are in the embed
-        assert embed.fields[1].name == "Enemy Tips"
-        assert embed.fields[2].name == "Tip 1"
-        assert embed.fields[2].value == champion_indepth_data.enemytips[0]
-        assert embed.fields[3].name == "Tip 2"
-        assert embed.fields[3].value == champion_indepth_data.enemytips[1]
-        assert embed.fields[4].name == "Tip 3"
-        assert embed.fields[4].value == champion_indepth_data.enemytips[2]
+        assert embed.fields[1].name == ":crossed_swords: Enemy Tips"
+        assert embed.fields[1].inline
+        assert embed.fields[1].value == (
+            f"**Tip 1**\n\n"
+            f"> {champion_data.data.get(champion_name).enemytips[0]}\n\n"
+            f"**Tip 2**\n\n"
+            f"> {champion_data.data.get(champion_name).enemytips[1]}\n\n"
+            f"**Tip 3**\n\n"
+            f"> {champion_data.data.get(champion_name).enemytips[2]}\n\n"
+        )
         
     def test_create_embed_with_ally_tips_and_no_enemy_tips(self):
         """Test creating an embed with ally tips and no enemy tips"""
@@ -87,16 +99,20 @@ class TestGetChampionEmbed:
         embed = embed_creator.create_embed(champion_name, champion_indepth_data)
         
         assert embed.title == champion_name
-        assert embed.description == champion_indepth_data.lore
+        assert embed.description == "> {0}".format(champion_indepth_data.lore)
         # Verify that the ally tips are in the embed
-        assert embed.fields[0].name == "Ally Tips"
-        assert embed.fields[1].name == "Tip 1"
-        assert embed.fields[1].value == champion_indepth_data.allytips[0]
-        assert embed.fields[2].name == "Tip 2"
-        assert embed.fields[2].value == champion_indepth_data.allytips[1]
-        assert embed.fields[3].name == "Tip 3"
-        assert embed.fields[3].value == champion_indepth_data.allytips[2]
+        assert embed.fields[0].name == ":trophy: Ally Tips"
+        assert embed.fields[0].inline
+        assert embed.fields[0].value == (
+            f"**Tip 1**\n\n"
+            f"> {champion_data.data.get(champion_name).allytips[0]}\n\n"
+            f"**Tip 2**\n\n"
+            f"> {champion_data.data.get(champion_name).allytips[1]}\n\n"
+            f"**Tip 3**\n\n"
+            f"> {champion_data.data.get(champion_name).allytips[2]}\n\n"
+        )
         # Verify that the enemy tips are not in the embed
-        assert embed.fields[4].name == "Enemy Tips"
-        assert embed.fields[4].value == "No tips available"
+        assert embed.fields[1].name == ":crossed_swords: Enemy Tips"
+        assert embed.fields[1].value == "No tips available :cry:"
+        assert embed.fields[1].inline is True
         

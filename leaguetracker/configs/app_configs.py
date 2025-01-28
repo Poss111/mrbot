@@ -14,3 +14,7 @@ class AppConfigs(ABC):
     @abstractmethod
     def get_guild_id(self):
         """Returns the guild id."""
+        
+    @abstractmethod
+    def get_app_version(self):
+        """Returns the app version."""

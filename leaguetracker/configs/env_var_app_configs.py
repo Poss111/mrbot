@@ -20,4 +20,7 @@ class EnvVarAppConfigs(AppConfigs):
     
     def get_guild_id(self):
         return os.getenv(EnvVariables.DISCORD_GUILD_ID.name)
+    
+    def get_app_version(self):
+        return os.getenv(EnvVariables.APP_VERSION.name)
             
