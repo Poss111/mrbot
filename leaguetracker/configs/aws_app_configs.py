@@ -26,4 +26,7 @@ class AWSAppConfigs(AppConfigs):
     
     def get_guild_id(self):
         return self.client.config['discord_guild_id']
+    
+    def get_app_version(self):
+        return self.client.config['app_version']
         

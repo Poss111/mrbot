@@ -9,42 +9,38 @@ class GetChampionEmbed(MrBotEmbed):
     def create_embed(self, champion: str, champion_data: Champion) -> discord.Embed:
         """Create the embed for the champion."""
         self.embed.title = champion
-        self.embed.description = champion_data.lore
+        self.embed.description = "> {0}".format(champion_data.lore)
         self.embed.set_image(url=f"https://ddragon.leagueoflegends.com/cdn/img/champion/splash/{champion}_{champion_data.skins[0].num}.jpg")
         if champion_data.allytips:
-            self.embed.add_field(
-                name="Ally Tips",
-                value="",
-                inline=False
-            )
+            tips = ""
             for idx, tip in enumerate(champion_data.allytips):
-                self.embed.add_field(
-                    name=f"Tip {idx + 1}",
-                    value=tip,
-                    inline=True
-                )
+                tips += f"**Tip {idx + 1}**\n\n> {tip}\n\n"
+                
+            self.embed.add_field(
+                name=":trophy: Ally Tips",
+                value=tips,
+                inline=True
+            )
         else:
             self.embed.add_field(
-                name="Ally Tips",
-                value="No tips available",
-                inline=False
+                name=":trophy: Ally Tips",
+                value="No tips available :cry:",
+                inline=True
             )
         if champion_data.enemytips:
-            self.embed.add_field(
-                name="Enemy Tips",
-                value="",
-                inline=False
-            )
+            enemy_tips = ""
             for idx, tip in enumerate(champion_data.enemytips):
-                self.embed.add_field(
-                    name=f"Tip {idx + 1}",
-                    value=tip,
-                    inline=True
-                )
+                enemy_tips += f"**Tip {idx + 1}**\n\n> {tip}\n\n"
+                
+            self.embed.add_field(
+                name=":crossed_swords: Enemy Tips",
+                value=enemy_tips,
+                inline=True
+            )
         else:
             self.embed.add_field(
-                name="Enemy Tips",
-                value="No tips available",
-                inline=False
+                name=":crossed_swords: Enemy Tips",
+                value="No tips available :cry:",
+                inline=True
             )
         return self.embed

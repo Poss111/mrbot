@@ -64,6 +64,9 @@ jobs:
             - name: Push Docker image to ECR
               run: docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ env.IMAGE_URI }}
 
+            - name: Get commit details
+              run: pipelineScripts/retrieve-commit-details.sh
+
             - name: Inject initial parameters to task definition
               env:
                 TASK_ROLE_ARN: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_TASK_ROLE_NAME }}
@@ -84,8 +87,9 @@ jobs:
                   LOG_LEVEL=info
                   LOGGING_FORMAT=json
                   DISCORD_GUILD_ID=${{ vars.DISCORD_GUILD_ID }}
-                  FOOTER_MSG=© 2024 - Made with discord.py
-                  AUTHOR=${{ vars.AUTHOR }} 
+                  FOOTER_MSG=© 2024 Made with discord.py
+                  AUTHOR=${{ vars.AUTHOR }}
+                  APP_VERSION=${{ env.COMMIT_IDENTIFIER }}
                 secrets: "DISCORD_TOKEN=arn:aws:secretsmanager:${{ secrets.AWS_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:secret:${{ secrets.SSM_DISCORD_TOKEN_NAME }}"
                 log-configuration-log-driver: awslogs
                 log-configuration-options: |

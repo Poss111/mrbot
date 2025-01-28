@@ -67,7 +67,7 @@ class BotModule(Module):
     def get_champion_embed(self, configuration: AppConfigs) -> GetChampionEmbed:
         """Creates a GetChampionEmbed instance."""
         return GetChampionEmbed(
-            configuration.get_footer_msg(),
+            "{0} - {1}".format(configuration.get_footer_msg(), configuration.get_app_version()),
             configuration.get_author()
         )
 
