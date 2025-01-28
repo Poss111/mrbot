@@ -1,5 +1,4 @@
 """This module contains the GetChampionEmbed class."""
-from typing import List
 import discord
 from leaguetracker.models.base_embed import MrBotEmbed
 from leaguetracker.models.riot_ddragon_champion import Champion
