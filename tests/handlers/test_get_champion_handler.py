@@ -76,6 +76,6 @@ class TestGetChampionHandler:
             model = RiotDDragonChampion.model_construct(**self.aatrox_sample_payload)
             riot_ddragon_service.retrieve_champion = AsyncMock(return_value=model)
             print(model)
-            result = await handler.handle(cham_name, loggerDetails={})
+            result = await handler.handle(cham_name)
             assert result is not None
             assert result == model
