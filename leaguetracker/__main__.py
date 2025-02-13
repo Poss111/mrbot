@@ -19,6 +19,8 @@ from leaguetracker.services.riot_ddragon_service import RiotDDragonService
 from leaguetracker.handlers.get_champion_handler import GetChampionHandler
 from leaguetracker.configs.mr_bot_client import MrBotClient
 from leaguetracker.models.get_champion_embed import GetChampionEmbed
+from leaguetracker.models.base_embed_configuration import BaseEmbedConfiguration
+from leaguetracker.models.get_champion_abilities_embed import GetChampionAbilitiesEmbed
 
 from leaguetracker.configs.app_configs import AppConfigs
 from leaguetracker.configs.env_var_app_configs import EnvVarAppConfigs
@@ -64,12 +66,22 @@ class BotModule(Module):
         return MrBotClient(intents, log, injector)
 
     @provider
-    def get_champion_embed(self, configuration: AppConfigs) -> GetChampionEmbed:
-        """Creates a GetChampionEmbed instance."""
-        return GetChampionEmbed(
-            "{0} - {1}".format(configuration.get_footer_msg(), configuration.get_app_version()),
-            configuration.get_author()
+    def base_embed_configuration(self, configuration: AppConfigs) -> BaseEmbedConfiguration:
+        """Creates a BaseEmbedConfiguration instance."""
+        return BaseEmbedConfiguration(
+            footer="{0} - {1}".format(configuration.get_footer_msg(), configuration.get_app_version()),
+            author=configuration.get_author()
         )
+
+    @provider
+    def get_champion_embed(self, base_embed_configuration: BaseEmbedConfiguration) -> GetChampionEmbed:
+        """Creates a GetChampionEmbed instance."""
+        return GetChampionEmbed(base_embed_configuration)
+        
+    @provider
+    def get_champion_abilities_embed(self, base_embed_configuration: BaseEmbedConfiguration) -> GetChampionAbilitiesEmbed:
+        """Creates a GetChampionEmbed instance."""
+        return GetChampionAbilitiesEmbed(base_embed_configuration)
 
 if __name__ == "__main__":
     logging.basicConfig(

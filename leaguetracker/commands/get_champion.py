@@ -14,6 +14,7 @@ import structlog
 from leaguetracker.configs.environment_variables import EnvVariables
 from leaguetracker.configs.mr_bot_client import MrBotClient
 from leaguetracker.handlers.get_champion_handler import GetChampionHandler
+from leaguetracker.models.get_champion_abilities_embed import GetChampionAbilitiesEmbed
 from leaguetracker.models.get_champion_embed import GetChampionEmbed
 from leaguetracker.models.riot_ddragon_champion import RiotDDragonChampion
 from leaguetracker.models.riot_ddragon_champions import RiotDDragonChampions
@@ -70,6 +71,35 @@ class Champions(commands.Cog):
             self.bot.log.error("Missing embed handler")
             return await interaction.response.send_message("Whoops! Something went wrong. Please try again later.")
         await interaction.response.send_message(embeds=[get_champion_embed.create_embed(champion, champion_data.data.get(champion))])
+        
+    @app_commands.command(
+        name="get_champion_abilities",
+        description="List out the abilities of a champion",
+    )
+    @app_commands.autocomplete(champion=champion_autocomplete)
+    @app_commands.guilds(int(os.getenv(EnvVariables.DISCORD_GUILD_ID.name)))
+    async def get_champion_abilities(self, interaction : discord.Interaction, champion: str):
+        """Get champion abilities"""
+        clear_contextvars()
+        bind_contextvars(id=interaction.id, guild=interaction.guild.id, user=interaction.user.id, command=interaction.command.name)
+        
+        self.bot.log.info("Retrieving champion abilities...")
+        
+        handler : GetChampionHandler = self.bot.injector.get(GetChampionHandler)
+        if handler is None:
+            self.bot.log.error("Missing get champion handler")
+            return await interaction.response.send_message("Whoops! Something went wrong. Please try again later.")
+        
+        champion_data: RiotDDragonChampion = await handler.handle(champion)
+        
+        self.bot.log.info(f"Champion data retrieved for {champion}, creating embed...")
+        
+        get_champion_abilities_embed : GetChampionAbilitiesEmbed = self.bot.injector.get(GetChampionAbilitiesEmbed)
+        if get_champion_abilities_embed is None:
+            self.bot.log.error("Missing embed handler")
+            return await interaction.response.send_message("Whoops! Something went wrong. Please try again later.")
+        await interaction.response.send_message(embeds=[get_champion_abilities_embed.create_embed(champion, champion_data.data.get(champion))])
+        
 
 async def setup(bot):
     """Setup the cog"""
