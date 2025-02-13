@@ -11,7 +11,7 @@ import discord
 from dotenv import load_dotenv
 from injector import Injector, Module, provider, singleton
 import structlog
-from transformers import pipeline, Pipeline
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from leaguetracker.configs.environment_variables import EnvVariables
 from leaguetracker.configs.logging_config import setup_logging
@@ -31,11 +31,6 @@ log = structlog.get_logger()
 
 class BotModule(Module):
     """Module for the bot. This class is responsible for setting up the bot's dependencies."""
-    
-    @singleton
-    @provider
-    def model(self) -> Pipeline:
-        return pipeline("text-generation", model="TinyLlama/TinyLlama-1.1B-step-50K-105b", trust_remote_code=True)
     
     @singleton
     @provider
@@ -84,7 +79,6 @@ if __name__ == "__main__":
     injector = Injector([BotModule()])
     # bot_instance = injector.call_with_injection(create_bot)
     mr_bot_instance = injector.get(MrBotClient)
-    injector.get(Pipeline)
     if (discord_token := os.getenv(EnvVariables.DISCORD_TOKEN.name)) is None:
         log.error("The DISCORD_TOKEN environment variable is not set. Exiting...")
         sys.exit(1)
