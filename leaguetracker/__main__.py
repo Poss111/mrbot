@@ -4,6 +4,8 @@ import logging
 import os
 import sys
 
+
+
 # Add the project root to the Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -11,8 +13,8 @@ import discord
 from dotenv import load_dotenv
 from injector import Injector, Module, provider, singleton
 import structlog
-from transformers import AutoModelForCausalLM, AutoTokenizer
 
+from leaguetracker.services.ollama_service import OllamaService
 from leaguetracker.configs.environment_variables import EnvVariables
 from leaguetracker.configs.logging_config import setup_logging
 from leaguetracker.services.riot_ddragon_cache import RiotDDragonCache
@@ -71,7 +73,12 @@ class BotModule(Module):
             "{0} - {1}".format(configuration.get_footer_msg(), configuration.get_app_version()),
             configuration.get_author()
         )
-
+    
+    @provider
+    def ollama_service(self) -> OllamaService:
+        """Creates an OllamaService instance."""
+        return OllamaService(model_name="deepseek-r1:8b")
+        
 if __name__ == "__main__":
     logging.basicConfig(
         format="%(message)s", stream=sys.stdout, level=logging.INFO

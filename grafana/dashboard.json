@@ -1,0 +1,624 @@
+{
+    "annotations": {
+        "list": [
+            {
+                "builtIn": 1,
+                "datasource": {
+                    "type": "grafana",
+                    "uid": "-- Grafana --"
+                },
+                "enable": true,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "name": "Annotations & Alerts",
+                "type": "dashboard"
+            }
+        ]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 0,
+    "id": 1,
+    "links": [],
+    "panels": [
+        {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 0
+            },
+            "id": 4,
+            "panels": [],
+            "title": "Mr Bot Usage",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "type": "datasource",
+                "uid": "-- Dashboard --"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "custom": {
+                        "align": "auto",
+                        "cellOptions": {
+                            "type": "auto"
+                        },
+                        "inspect": false
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "command"
+                        },
+                        "properties": [
+                            {
+                                "id": "displayName",
+                                "value": "Commands"
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "id (distinctCount)"
+                        },
+                        "properties": [
+                            {
+                                "id": "displayName",
+                                "value": "Invocations"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 6,
+                "x": 0,
+                "y": 1
+            },
+            "id": 2,
+            "options": {
+                "cellHeight": "sm",
+                "footer": {
+                    "countRows": false,
+                    "fields": "",
+                    "reducer": [
+                        "sum"
+                    ],
+                    "show": true
+                },
+                "showHeader": true,
+                "sortBy": [
+                    {
+                        "desc": false,
+                        "displayName": "command"
+                    }
+                ]
+            },
+            "pluginVersion": "10.4.1",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "datasource",
+                        "uid": "-- Dashboard --"
+                    },
+                    "panelId": 1,
+                    "refId": "A",
+                    "withTransforms": true
+                }
+            ],
+            "title": "Command Metrics",
+            "transformations": [
+                {
+                    "id": "groupBy",
+                    "options": {
+                        "fields": {
+                            "command": {
+                                "aggregations": [],
+                                "operation": "groupby"
+                            },
+                            "id": {
+                                "aggregations": [
+                                    "distinctCount"
+                                ],
+                                "operation": "aggregate"
+                            }
+                        }
+                    }
+                },
+                {
+                    "id": "filterByValue",
+                    "options": {
+                        "filters": [
+                            {
+                                "config": {
+                                    "id": "isNull",
+                                    "options": {}
+                                },
+                                "fieldName": "command"
+                            }
+                        ],
+                        "match": "any",
+                        "type": "exclude"
+                    }
+                }
+            ],
+            "type": "table"
+        },
+        {
+            "datasource": {
+                "type": "datasource",
+                "uid": "-- Dashboard --"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 5,
+                "x": 6,
+                "y": 1
+            },
+            "id": 3,
+            "options": {
+                "inlineEditing": true,
+                "panZoom": false,
+                "root": {
+                    "background": {
+                        "color": {
+                            "fixed": "transparent"
+                        }
+                    },
+                    "border": {
+                        "color": {
+                            "fixed": "dark-green"
+                        }
+                    },
+                    "elements": [
+                        {
+                            "background": {
+                                "color": {
+                                    "field": "guild",
+                                    "fixed": "#D9D9D9"
+                                }
+                            },
+                            "border": {
+                                "color": {
+                                    "fixed": "dark-green"
+                                }
+                            },
+                            "config": {
+                                "align": "center",
+                                "color": {
+                                    "fixed": "#000000"
+                                },
+                                "size": 20,
+                                "text": {
+                                    "field": "guild",
+                                    "fixed": "",
+                                    "mode": "field"
+                                },
+                                "valign": "middle"
+                            },
+                            "constraint": {
+                                "horizontal": "left",
+                                "vertical": "top"
+                            },
+                            "name": "Element 1",
+                            "placement": {
+                                "height": 50,
+                                "left": 19,
+                                "top": 32,
+                                "width": 260
+                            },
+                            "type": "metric-value"
+                        }
+                    ],
+                    "name": "Element 1737963153057",
+                    "type": "frame"
+                },
+                "showAdvancedTypes": true
+            },
+            "pluginVersion": "10.4.1",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "datasource",
+                        "uid": "-- Dashboard --"
+                    },
+                    "panelId": 1,
+                    "refId": "A"
+                }
+            ],
+            "title": "Guilds",
+            "transformations": [
+                {
+                    "id": "extractFields",
+                    "options": {
+                        "format": "json",
+                        "source": "@message"
+                    }
+                },
+                {
+                    "id": "groupBy",
+                    "options": {
+                        "fields": {
+                            "guild": {
+                                "aggregations": [],
+                                "operation": "groupby"
+                            }
+                        }
+                    }
+                }
+            ],
+            "type": "canvas"
+        },
+        {
+            "datasource": {
+                "type": "datasource",
+                "uid": "-- Dashboard --"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "custom": {
+                        "align": "auto",
+                        "cellOptions": {
+                            "type": "auto"
+                        },
+                        "inspect": false
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 5,
+                "x": 11,
+                "y": 1
+            },
+            "id": 5,
+            "options": {
+                "cellHeight": "sm",
+                "footer": {
+                    "countRows": false,
+                    "fields": "",
+                    "reducer": [
+                        "sum"
+                    ],
+                    "show": false
+                },
+                "showHeader": true
+            },
+            "pluginVersion": "10.4.1",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "datasource",
+                        "uid": "-- Dashboard --"
+                    },
+                    "panelId": 1,
+                    "refId": "A",
+                    "withTransforms": true
+                }
+            ],
+            "title": "Users",
+            "transformations": [
+                {
+                    "id": "groupBy",
+                    "options": {
+                        "fields": {
+                            "user": {
+                                "aggregations": [],
+                                "operation": "groupby"
+                            }
+                        }
+                    }
+                },
+                {
+                    "id": "filterByValue",
+                    "options": {
+                        "filters": [
+                            {
+                                "config": {
+                                    "id": "isNull",
+                                    "options": {}
+                                },
+                                "fieldName": "user"
+                            }
+                        ],
+                        "match": "any",
+                        "type": "exclude"
+                    }
+                }
+            ],
+            "type": "table"
+        },
+        {
+            "datasource": {
+                "type": "datasource",
+                "uid": "-- Dashboard --"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 16,
+                "y": 1
+            },
+            "id": 6,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "first"
+                    ],
+                    "fields": "/^timestamp$/",
+                    "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+            },
+            "pluginVersion": "10.4.1",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "datasource",
+                        "uid": "-- Dashboard --"
+                    },
+                    "panelId": 1,
+                    "refId": "A",
+                    "withTransforms": true
+                }
+            ],
+            "title": "Last Command Ran At",
+            "transformations": [
+                {
+                    "id": "filterByValue",
+                    "options": {
+                        "filters": [
+                            {
+                                "config": {
+                                    "id": "isNotNull",
+                                    "options": {}
+                                },
+                                "fieldName": "command"
+                            }
+                        ],
+                        "match": "any",
+                        "type": "include"
+                    }
+                },
+                {
+                    "id": "sortBy",
+                    "options": {
+                        "fields": {},
+                        "sort": [
+                            {
+                                "desc": false,
+                                "field": "timestamp"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "id": "formatTime",
+                    "options": {
+                        "outputFormat": "MMMM Do YYYY H:m:SS z",
+                        "timeField": "Time",
+                        "timezone": "America/Chicago",
+                        "useTimezone": true
+                    }
+                },
+                {
+                    "id": "convertFieldType",
+                    "options": {
+                        "conversions": [
+                            {
+                                "destinationType": "time",
+                                "targetField": "timestamp"
+                            }
+                        ],
+                        "fields": {}
+                    }
+                },
+                {
+                    "id": "formatTime",
+                    "options": {
+                        "outputFormat": "MMMM Do, YYYY h:m:SS A z",
+                        "timeField": "timestamp",
+                        "timezone": "America/Chicago",
+                        "useTimezone": true
+                    }
+                }
+            ],
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "cloudwatch",
+                "uid": "beb8d4wkfnpj4f"
+            },
+            "description": "",
+            "gridPos": {
+                "h": 8,
+                "w": 24,
+                "x": 0,
+                "y": 9
+            },
+            "id": 1,
+            "options": {
+                "dedupStrategy": "none",
+                "enableLogDetails": true,
+                "prettifyLogMessage": false,
+                "showCommonLabels": false,
+                "showLabels": false,
+                "showTime": false,
+                "sortOrder": "Descending",
+                "wrapLogMessage": false
+            },
+            "pluginVersion": "10.4.1",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "cloudwatch",
+                        "uid": "beb8d4wkfnpj4f"
+                    },
+                    "dimensions": {},
+                    "expression": "fields @timestamp, @message |\n sort @timestamp desc |\n limit 20",
+                    "id": "",
+                    "label": "",
+                    "logGroups": [
+                        {
+                            "accountId": "816923827429",
+                            "arn": "arn:aws:logs:us-east-1:816923827429:log-group:/ecs/discord-bot:*",
+                            "name": "/ecs/discord-bot"
+                        }
+                    ],
+                    "matchExact": true,
+                    "metricEditorMode": 0,
+                    "metricName": "",
+                    "metricQueryType": 0,
+                    "namespace": "AWS/ECS",
+                    "period": "",
+                    "queryMode": "Logs",
+                    "refId": "A",
+                    "region": "us-east-1",
+                    "sqlExpression": "",
+                    "statistic": "Average"
+                }
+            ],
+            "title": "Logs",
+            "transformations": [
+                {
+                    "id": "convertFieldType",
+                    "options": {
+                        "conversions": [
+                            {
+                                "destinationType": "string",
+                                "targetField": "@message"
+                            },
+                            {
+                                "dateFormat": "YYYY-mm-DD HH:MM:SS",
+                                "destinationType": "time",
+                                "targetField": "Time"
+                            }
+                        ],
+                        "fields": {}
+                    }
+                },
+                {
+                    "id": "extractFields",
+                    "options": {
+                        "format": "json",
+                        "source": "@message"
+                    }
+                },
+                {
+                    "id": "formatTime",
+                    "options": {
+                        "outputFormat": "Month DD YYYY HH:MM:SS",
+                        "timeField": "Time",
+                        "timezone": "America/Chicago",
+                        "useTimezone": true
+                    }
+                }
+            ],
+            "type": "logs"
+        }
+    ],
+    "schemaVersion": 39,
+    "tags": [],
+    "templating": {
+        "list": []
+    },
+    "time": {
+        "from": "now-1h",
+        "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "browser",
+    "title": "MrBot",
+    "uid": "eeb8efcovdse8e",
+    "version": 9,
+    "weekStart": ""
+}

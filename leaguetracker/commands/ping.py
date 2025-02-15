@@ -3,9 +3,9 @@ import os
 import discord
 from discord.ext import commands
 from discord import app_commands
-from transformers import AutoModelForCausalLM, AutoTokenizer
 from leaguetracker.configs.environment_variables import EnvVariables
 from leaguetracker.configs.mr_bot_client import MrBotClient
+from leaguetracker.services.ollama_service import OllamaService
 
 class Health(commands.Cog):
     """Health check commands"""
@@ -23,14 +23,12 @@ class Health(commands.Cog):
         """Ping command to check bot availability"""
         self.bot.log.info("Pong!")
         await interaction.response.defer()
-        MODEL_NAME = "TinyLlama/TinyLlama-1.1B-step-50K-105b"
-
-        tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-        model = AutoModelForCausalLM.from_pretrained(MODEL_NAME, device_map="auto")
         
-        inputs = tokenizer("Can you create a fantasy environment for me?", return_tensors="pt").to(model.device)
-        outputs = model.generate(**inputs, max_length=100)
-        await interaction.followup.send(tokenizer.decode(outputs[0], skip_special_tokens=True))
+        ollama_service: OllamaService = self.bot.injector.get(OllamaService)
+        
+        response = ollama_service.generate_chat_response("Say hello! Like a gentlemen robot. Limit it to at most 10 words.", None, True)
+        
+        await interaction.followup.send(response)
 
 async def setup(bot: MrBotClient):
     await bot.add_cog(Health(bot))
